@@ -76,7 +76,7 @@ data$Month_Yr <-format(as.Date(data$Date), "%Y-%m")
 library(wesanderson)
 ## Time spent by activity
 activity_colors <- c("#ffa600","#003f5c","#bc5090","#ff6361")
-year_colors <- c("#ff6c03","#d44f10","#a83511","#7c1d0e","#520801","#D8B70A")
+year_colors <- c("#F0BD1D","#c7e9b4","#7fcdbb","#41b6c4","#2c7fb8","#253494")
 
 
 
@@ -118,7 +118,11 @@ month_year_time<-summarise(data_all, Time = sum(Time,na.rm=TRUE))
 month_year_time$month <- month.abb[month_year_time$month]
 month_year_time$month <-  factor(month_year_time$month, levels = month.abb)
 
+View(month_year_time)
+
 # Time spent per month 
+png("month_year_all.png", width = 6, height = 4, units = 'in', res = 300)
+
 ggplot(month_year_time, aes(x=month, y=Time,group= Year, color = Year))+
       geom_point(size = 3)+ geom_line()+
       labs(x= "Month", y= "Time (hours)", title= "Time spent per month 2014-2019")+ 
@@ -130,7 +134,7 @@ ggplot(month_year_time, aes(x=month, y=Time,group= Year, color = Year))+
       annotate( geom= "segment", x = 4, xend = 5, y= 29, yend= 19.5, colour = "black",size= .5,alpha=.6)+
       annotate( geom= "segment", x = 6, xend = 7, y= 14, yend= 8, colour = "black",size= .5,alpha=.6)+
       annotate( geom= "segment", x = 7.5, xend = 8, y= 24, yend= 20.5, colour = "black",size= .5,alpha=.6)+
-      scale_color_manual(values = wes_palette("IsleofDogs1"))+
+      scale_color_manual(values = year_colors)+
       theme(plot.background = element_blank(),
             panel.grid.minor = element_blank(),
             panel.grid.major = element_blank(),
@@ -139,5 +143,6 @@ ggplot(month_year_time, aes(x=month, y=Time,group= Year, color = Year))+
             axis.ticks = element_blank()
       )
 
+dev.off()
 
 
