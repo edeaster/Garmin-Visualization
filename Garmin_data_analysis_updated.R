@@ -74,15 +74,11 @@ data$Week<- factor(data$Week)
 data$Month_Yr <-format(as.Date(data$Date), "%Y-%m")
 
 library(wesanderson)
+
+##Overview of Training
 ## Time spent by activity
 activity_colors <- c("#ffa600","#003f5c","#bc5090","#ff6361")
 year_colors <- c("#F0BD1D","#c7e9b4","#7fcdbb","#41b6c4","#2c7fb8","#253494")
-
-
-
-
-
-
 
 overview_data<- filter(data, Activity.Type != "hiking", Activity.Type !="multi_sport")
 overview_data$Activity.Type <- as.character(overview_data$Activity.Type)
@@ -109,8 +105,25 @@ ggplot(overview_data, aes(x=Year, y=Time, fill= Activity.Type))+
             axis.ticks = element_blank()
             #axis.text = element_blank(),  
       )
-View(overview_data)
+overview_data_sub<- overview_data
+overview_data_sub$month <- as.numeric(as.character(overview_data_sub$month))
+overview_data_sub <- filter(overview_data_sub, month >= 7)
 
+png("jul-dec_time_by_act.png", height = 4, width= 6, unit= 'in', res = 300)
+ggplot(overview_data_sub, aes(x=Year, y=Time, fill= Activity.Type))+
+      geom_bar(stat= "identity" )+
+      labs(x="Year", y = "Time (hours)", title= "Time spent by Activity 2014-2019, July-Dec")+ theme_bw()+
+      scale_fill_manual(name= "Activity", labels= c("Cycling","Swimming","Running"),values= activity_colors)+
+      theme(plot.background = element_blank(),
+            panel.grid.minor = element_blank(),
+            panel.grid.major = element_blank(),
+            panel.border = element_blank(),
+            panel.background = element_blank(),
+            axis.ticks = element_blank()
+            #axis.text = element_blank(),  
+      )
+dev.off()
+View(overview_data_sub)
 
 data$Year <- as.factor(data$Year)
 data_all <- group_by(data, month, Year)
@@ -121,7 +134,7 @@ month_year_time$month <-  factor(month_year_time$month, levels = month.abb)
 View(month_year_time)
 
 # Time spent per month 
-png("month_year_all.png", width = 6, height = 4, units = 'in', res = 300)
+png("month_year_all.png", width = 8, height = 4, units = 'in', res = 300)
 
 ggplot(month_year_time, aes(x=month, y=Time,group= Year, color = Year))+
       geom_point(size = 3)+ geom_line()+
@@ -144,5 +157,101 @@ ggplot(month_year_time, aes(x=month, y=Time,group= Year, color = Year))+
       )
 
 dev.off()
+
+##Cycling Data
+
+data_cyc <- subset(data, Activity.Type == "cycling")
+data_cyc$Avg.Speed <- as.numeric(as.character(data_cyc$Avg.Speed))
+data_cyc <- filter(data_cyc, Avg.Speed >= 5)
+data_cyc$Distance <- as.numeric(as.character(data_cyc$Distance))
+
+data_cyc_top <- filter(data_cyc, Distance>10, Avg.Speed >13)
+data_cyc_top$Year <- as.factor(data_cyc_top$Year)
+data_cyc_top$Month_Yr <- format(as.Date(data_cyc_top$Date), "%Y-%m")
+
+top_data<- data_cyc_top %>% group_by(Month_Yr,Year) %>%
+      summarise(top = quantile(Avg.Speed)[4],max= max(Avg.Speed), distance_avg = mean(Distance), 
+                total_dis = sum(Distance), avg_speed = mean(Avg.Speed))
+
+## Max Average Ride Speed by month
+png("Max_avg_speed_mon.png",width = 8, height = 4,units = 'in',res=300)
+ggplot(top_data,aes(x= Month_Yr, y= max, group = 1,colour = Year))+
+      geom_point(size = 3)+
+      geom_line()+
+      scale_color_manual(values = c("#41b6c4","#2c7fb8","#253494"))+
+      scale_x_discrete(labels = month.abb[as.numeric(substr(top_data$Month_Yr,6,7))])+
+      theme(plot.background = element_blank(),
+            panel.grid.minor = element_blank(),
+            panel.grid.major = element_blank(),
+            panel.border = element_blank(),
+            panel.background = element_blank(),
+            axis.ticks = element_blank()
+      )+
+      labs(x="Month", y = "Max Average Ride speed (mph)", title= "Max Average Ride Speed by Month",  color = "Year")
+dev.off()
+## Average Ride distance by month
+png("avg_dis_mon.png",width = 8, height = 4,units = 'in',res=300)
+ggplot(top_data,aes(x= Month_Yr, y= distance_avg, group = 1,colour = format(Year)))+
+      geom_point(size = 3)+
+      geom_line()+
+      scale_color_manual(values = c("#41b6c4","#2c7fb8","#253494"))+
+      scale_x_discrete(labels = month.abb[as.numeric(substr(top_data$Month_Yr,6,7))])+
+      theme(plot.background = element_blank(),
+            panel.grid.minor = element_blank(),
+            panel.grid.major = element_blank(),
+            panel.border = element_blank(),
+            panel.background = element_blank(),
+            axis.ticks = element_blank()
+      )+
+      labs(x="Month", y = "Distance (miles)", title= "Average Ride Distance by Month",  color = "Year")
+dev.off()
+## Average Ride speed by month 
+png("avg_speed_mon.png",width = 8, height = 4,units = 'in',res=300)
+ggplot(top_data,aes(x= Month_Yr, y= avg_speed, group = 1,colour = format(Year)))+
+      scale_y_continuous(limits = c(15,19))+
+      geom_point(size = 3)+
+      geom_line()+
+      scale_x_discrete(labels = month.abb[as.numeric(substr(top_data$Month_Yr,6,7))])+
+      scale_color_manual(values =c("#41b6c4","#2c7fb8","#253494"))+
+      theme(plot.background = element_blank(),
+            panel.grid.minor = element_blank(),
+            panel.grid.major = element_blank(),
+            panel.border = element_blank(),
+            panel.background = element_blank(),
+            axis.ticks = element_blank()
+      )+
+      labs(x="Month", y = "Average Ride Speed (mph)", title= "Average Ride Speed by Month",  color = "Year")
+dev.off()
+## Total Distance per month
+png("tot_dis_mon.png",width = 8, height = 4,units = 'in',res=300)
+ggplot(top_data,aes(x=Month_Yr, y = total_dis,fill = format(Year)))+ geom_bar(stat = "identity")+
+      scale_x_discrete(labels = month.abb[as.numeric(substr(top_data$Month_Yr,6,7))])+
+      scale_fill_manual(values = c("#41b6c4","#2c7fb8","#253494"))+
+      theme(plot.background = element_blank(),
+            panel.grid.minor = element_blank(),
+            panel.grid.major = element_blank(),
+            panel.border = element_blank(),
+            panel.background = element_blank(),
+            axis.ticks = element_blank()
+      )+
+      labs(x="Month", y = "Distance (miles)", title= "Distance per Month",  fill = "Year")
+dev.off()
+
+## Average Distance per month by year
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
