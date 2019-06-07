@@ -108,7 +108,7 @@ overview_data <- overview_data[complete.cases(overview_data[ , 34]),]
 overview_data <- filter(overview_data, Year != 2019)
 
 #Time spend by activity per year
-png("overview_time.png", height = 4, width = 8, units = "in", res = 300)
+png("overview_time.png", height = 4, width = 6, units = "in", res = 300)
 ggplot(overview_data, aes(x=Year, y=Time, fill= Activity.Type))+
       geom_bar(stat= "identity" )+
       labs(x="Year", y = "Time (hours)", title= "Time spent by Activity 2014-2018")+ theme_bw()+
@@ -130,7 +130,7 @@ overview_data_sub <- filter(overview_data_sub, month >= 7)
 png("jul-dec_time_by_act.png", height = 4, width= 6, unit= 'in', res = 300)
 ggplot(overview_data_sub, aes(x=Year, y=Time, fill= Activity.Type))+
       geom_bar(stat= "identity" )+
-      labs(x="Year", y = "Time (hours)", title= "Time spent by Activity 2014-2018, August-Dec")+ theme_bw()+
+      labs(x="Year", y = "Time (hours)", title= "Time spent by Activity 2014-2018, August-December")+ theme_bw()+
       scale_fill_manual(name= "Activity", labels= c("Cycling","Swimming","Running"),values= activity_colors)+
       theme(plot.background = element_blank(),
             panel.grid.minor = element_blank(),
@@ -152,7 +152,7 @@ month_year_time$month <-  factor(month_year_time$month, levels = month.abb)
 
 
 # Time spent by activity per month 
-png("month_year_all.png", width = 8, height = 4, units = 'in', res = 300)
+png("month_year_all.png", width = 8, height = 4, units = 'in', res = 600)
 
 ggplot(month_year_time, aes(x=month, y=Time,group= Year, color = Year))+
       geom_point(size = 3)+ geom_line()+
@@ -176,7 +176,7 @@ ggplot(month_year_time, aes(x=month, y=Time,group= Year, color = Year))+
 
 dev.off()
 
-##Cycling Data
+##Cycling Analysis
 
 data_cyc <- subset(data, Activity.Type == "cycling") #crate data set for cycling 
 data_cyc$Avg.Speed <- as.numeric(as.character(data_cyc$Avg.Speed))
@@ -184,7 +184,7 @@ data_cyc <- filter(data_cyc, Avg.Speed >= 5) #Take out rides with speed less tha
 data_cyc$Distance <- as.numeric(as.character(data_cyc$Distance)) #convert distance to a numeric
 data_cyc <- filter(data_cyc, Year != 2019)
       
-data_cyc_top <- filter(data_cyc, Distance>10, Avg.Speed >13) #T
+data_cyc_top <- filter(data_cyc, Distance>10, Avg.Speed >13) 
 data_cyc_top$Year <- as.factor(data_cyc_top$Year)
 data_cyc_top$Month_Yr <- format(as.Date(data_cyc_top$Date), "%Y-%m")
 
@@ -199,6 +199,7 @@ data_cyc_top_tally <- data_cyc_top_tally %>%
 
 
 data<-mutate(data, month = month(as.POSIXlt(data$Date, format="%m/%d/%Y")))
+
 ## Fastest ride speed by month
 png("Max_avg_speed_mon.png",width = 8, height = 4,units = 'in',res=300)
 ggplot(top_data,aes(x= Month_Yr, y= max, group = 1,colour = Year))+
@@ -297,8 +298,7 @@ speed_var <- data_cyc_top %>%
 ggplot(speed_var, aes(x=Month_Yr, y= variance_speed)) +geom_point()
 
 
-
-######################################################Running Analysis
+###Running Analysis
 
 library(chron)
 data_run <- subset(data, Activity.Type == "running")      #subset running data
@@ -412,7 +412,6 @@ ggplot(top_data_run,aes(x= Month_Yr, y= max, group = 1,colour = format(Year)))+
       ) +
       labs(x="Month", y = "Max Average Run speed (mph)", title= "Max Average Run Speed by Month",  color = "Year")+
       scale_color_manual(values = year_colors)
-View(top_data_run)
 
 
 ## Average Run speed by month 
@@ -452,7 +451,7 @@ ggplot(top_data_run,aes(x=Month_Yr, y = total_dis, group = 1 ))+ geom_area()+
 
 
 
-##Stride vs spped
+##Stride vs speed
 data_run_speed <- data_run
 data_run_speed_st<- data_run_speed
 data_run_speed$Avg.Speed <- as.numeric(as.character(data_run$Avg.Speed.mph))
@@ -491,11 +490,9 @@ ggplot(data_run_speed, aes(x = Avg.Speed, group = Year, fill=Year))+
       labs(x="Speed", y = "Number of Runs", title= "Histogram of Speed by Year",  fill = "Year")+
       scale_fill_manual(values = c("#41b6c4","#2c7fb8"))+
       scale_x_continuous(breaks=c(0,2,4,6,8,10))
-      #scale_fill_manual(values=c("pink","blue"))
 dev.off()
-View(data_run_speed)
 
-#############################Swimming#####################
+##Swim Analysis
 
 data_swim <- subset(data, Activity.Type == "lap_swimming")
 data_swim <- filter(data_swim, Year != 2019)
@@ -553,7 +550,7 @@ ggplot(top_data_swim,aes(x=Month_Yr, y = total_dis,fill = format(Year)))+ geom_b
             panel.background = element_blank(),
             axis.ticks = element_blank()
       )+
-      labs(x="Month", y = "Distance (miles)", title= "Distance per Month",  fill = "Year")+
+      labs(x="Month", y = "Distance (meters)", title= "Distance per Month",  fill = "Year")+
       scale_fill_manual(values = c("#41b6c4","#2c7fb8","#253494"))
 dev.off()
 
@@ -575,7 +572,7 @@ ggplot(top_data_swim,aes(x= Month_Yr, y= avg_swolf, group = 1,colour = format(Ye
             panel.background = element_blank(),
             axis.ticks = element_blank()
       )+
-      labs(x="Month", y = "Average Swim pace min/100m", title= "Average Swolf by Month",  color = "Year")+
+      labs(x="Month", y = "Avergae Swolf", title= "Average Swolf by Month",  color = "Year")+
       scale_color_manual(values = c("#41b6c4","#2c7fb8","#253494"))
 dev.off()
 
